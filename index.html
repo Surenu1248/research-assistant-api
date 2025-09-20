@@ -5,144 +5,281 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Research Assistant</title>
     <style>
+        :root {
+            --primary-color: #4A90E2;
+            --primary-hover: #357ABD;
+            --background-color: #F7F9FC;
+            --container-bg: #FFFFFF;
+            --text-color: #333D49;
+            --light-text: #7A8C99;
+            --border-color: #E6ECF1;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
         }
+
         .container {
             width: 100%;
             max-width: 800px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 30px;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            transition: all 0.3s ease-in-out;
         }
-        h1 {
-            color: #2c3e50;
+
+        .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
-        .section {
+
+        .header h1 {
+            font-size: 2.25em;
+            color: var(--text-color);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: var(--light-text);
+            margin-top: 8px;
+        }
+
+        .step-card {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
             margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
+
+        .step-number {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            width: 100%;
+        }
+        
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 8px;
-            color: #555;
+            margin-bottom: 12px;
+            font-size: 1.1em;
         }
-        input[type="file"], input[type="text"] {
+        
+        .file-upload-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        }
+
+        .file-upload-button {
+            border: 2px dashed var(--border-color);
+            color: var(--light-text);
+            background-color: var(--background-color);
+            padding: 30px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .file-upload-button:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        #file-upload {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.2s ease;
         }
-        button {
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        button#ask-button {
             width: 100%;
-            padding: 12px;
-            background-color: #3498db;
+            padding: 15px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        button:hover {
-            background-color: #2980b9;
+
+        button#ask-button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
         }
+
         button:disabled {
             background-color: #a9cce3;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
+
         #dashboard {
-            margin-top: 30px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
+            margin-top: 40px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 30px;
         }
+
         #report {
-            background-color: #fdfdfe;
-            border: 1px solid #e1e8ed;
-            border-radius: 6px;
-            padding: 20px;
-            white-space: pre-wrap; /* Preserves line breaks and spacing */
-            line-height: 1.6;
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            font-size: 1.05em;
+            color: #495057;
+            min-height: 100px;
         }
+
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none; /* Hidden by default */
+            margin: 40px auto;
+            display: none;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
         .status {
             text-align: center;
-            margin-top: 10px;
-            font-style: italic;
-            color: #777;
+            margin-top: 15px;
+            font-size: 0.95em;
+            color: var(--light-text);
+        }
+
+        #report strong {
+             color: var(--text-color);
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Smart Research Assistant 🧠</h1>
-
-    <div class="section">
-        <label for="file-upload">Step 1: Upload a PDF Document</label>
-        <input type="file" id="file-upload" accept=".pdf">
-        <div id="upload-status" class="status"></div>
+    <div class="header">
+        <h1>Smart Research Assistant 🧠</h1>
+        <p>Your AI-powered partner for instant, cited insights from your documents.</p>
     </div>
 
-    <div class="section">
-        <label for="question-input">Step 2: Ask a Question</label>
-        <input type="text" id="question-input" placeholder="e.g., What were the key findings?" disabled>
+    <div class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <label for="file-upload">Upload a PDF Document</label>
+            <div class="file-upload-wrapper">
+                <div class="file-upload-button" id="file-upload-text">
+                    Click to browse or drag & drop a PDF
+                </div>
+                <input type="file" id="file-upload" accept=".pdf">
+            </div>
+            <div id="upload-status" class="status"></div>
+        </div>
     </div>
 
-    <button id="ask-button" disabled>Generate Report</button>
+    <div class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <label for="question-input">Ask a Question</label>
+            <input type="text" id="question-input" placeholder="e.g., What were the key findings of the study?" disabled>
+        </div>
+    </div>
+
+    <button id="ask-button" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.59a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+        Generate Report
+    </button>
 
     <div id="dashboard">
         <div class="spinner" id="loading-spinner"></div>
-        <div id="report">Your generated report will appear here...</div>
+        <div id="report"><p>Your generated report will appear here...</p></div>
     </div>
 </div>
 
 <script>
-    // --- Configuration ---
     const API_BASE_URL = 'https://research-assistant-api.onrender.com';
-
-    // --- DOM Elements ---
     const fileUpload = document.getElementById('file-upload');
     const uploadStatus = document.getElementById('upload-status');
     const questionInput = document.getElementById('question-input');
     const askButton = document.getElementById('ask-button');
     const loadingSpinner = document.getElementById('loading-spinner');
     const reportContainer = document.getElementById('report');
+    const fileUploadText = document.getElementById('file-upload-text');
 
-    // --- Event Listeners ---
     fileUpload.addEventListener('change', handleFileUpload);
     askButton.addEventListener('click', handleAskQuestion);
 
-    // --- Functions ---
     async function handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
 
-        uploadStatus.textContent = `Uploading ${file.name}...`;
+        fileUploadText.textContent = `Selected: ${file.name}`;
+        uploadStatus.textContent = `Uploading and processing...`;
+        uploadStatus.style.color = 'var(--primary-color)';
         const formData = new FormData();
         formData.append('file', file);
 
@@ -153,16 +290,21 @@
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorResult = await response.json();
+                throw new Error(errorResult.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
             uploadStatus.textContent = result.message;
+            uploadStatus.style.color = '#2ECC71'; // Green for success
             questionInput.disabled = false;
             askButton.disabled = false;
+            questionInput.focus();
         } catch (error) {
             console.error('Error uploading file:', error);
-            uploadStatus.textContent = 'File upload failed. Please try again.';
+            uploadStatus.textContent = `Upload failed: ${error.message}`;
+            uploadStatus.style.color = '#E74C3C'; // Red for error
+            fileUploadText.textContent = 'Click to browse or drag & drop a PDF';
         }
     }
 
@@ -174,8 +316,9 @@
         }
 
         loadingSpinner.style.display = 'block';
-        reportContainer.innerHTML = '';
+        reportContainer.style.display = 'none';
         askButton.disabled = true;
+        askButton.innerHTML = 'Generating...';
 
         const formData = new FormData();
         formData.append('question', question);
@@ -187,17 +330,26 @@
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorResult = await response.json();
+                throw new Error(errorResult.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
-            reportContainer.textContent = result.report;
+            // Basic Markdown to HTML conversion
+            let formattedReport = result.report
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                .replace(/\n/g, '<br>'); // Newlines
+            reportContainer.innerHTML = formattedReport;
         } catch (error) {
             console.error('Error asking question:', error);
-            reportContainer.textContent = 'Failed to generate report. Please check the console for errors.';
+            reportContainer.innerHTML = `<p style="color: #E74C3C;">Failed to generate report: ${error.message}</p>`;
         } finally {
             loadingSpinner.style.display = 'none';
+            reportContainer.style.display = 'block';
             askButton.disabled = false;
+            askButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.59a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                Generate Report`;
         }
     }
 </script>

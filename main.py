@@ -15,7 +15,22 @@ import google.generativeai as genai
 HUGGINGFACE_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+# --- NEW: LAZY LOADING IMPLEMENTATION ---
+# We initialize the heavy model to None. It will only be loaded into memory
+# when the first user request comes in, preventing a startup crash on Render.
+embeddings = None
+
+def get_embeddings():
+    """Initializes and returns the embedding model, loading it only once."""
+    global embeddings
+    if embeddings is None:
+        # This print statement will appear in your Render logs the first time a file is uploaded
+        print("Lazy loading embedding model...")
+        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        print("Model loaded successfully.")
+    return embeddings
+# ---
 
 # --- In-memory "database" ---
 vector_store = None
@@ -45,6 +60,11 @@ async def create_upload_file(file: UploadFile = File(...)):
     if file.content_type != "application/pdf":
         return JSONResponse(status_code=400, content={"message": "Please upload a PDF file."})
     try:
+        # --- CHANGE: Load the model on first use ---
+        # Instead of using the global variable directly, we call our new function.
+        # This triggers the model download and loading process.
+        current_embeddings = get_embeddings()
+        
         file_content = await file.read()
         pdf_reader = PdfReader(io.BytesIO(file_content))
         text = "".join(page.extract_text() or "" for page in pdf_reader.pages)
@@ -53,7 +73,10 @@ async def create_upload_file(file: UploadFile = File(...)):
         
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         chunks = text_splitter.split_text(text=text)
-        vector_store = FAISS.from_texts(chunks, embedding=embeddings)
+        
+        # Now we use the loaded model to create the vector store
+        vector_store = FAISS.from_texts(chunks, embedding=current_embeddings)
+        
         return {"message": f"File '{file.filename}' processed successfully. You can now ask questions."}
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": f"An error occurred: {str(e)}"})
@@ -68,6 +91,7 @@ async def ask_question(question: str = Form(...)):
         return JSONResponse(status_code=400, content={"message": "Please provide a question."})
 
     try:
+        # No change needed here, as the vector_store already contains the processed embeddings
         docs = vector_store.similarity_search(query=question, k=3)
         context = "\n".join([doc.page_content for doc in docs])
         

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Research Assistant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #a9cce3;
+            cursor: not-allowed;
+        }
+        #dashboard {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        #report {
+            background-color: #fdfdfe;
+            border: 1px solid #e1e8ed;
+            border-radius: 6px;
+            padding: 20px;
+            white-space: pre-wrap; /* Preserves line breaks and spacing */
+            line-height: 1.6;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none; /* Hidden by default */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Smart Research Assistant 🧠</h1>
+
+    <div class="section">
+        <label for="file-upload">Step 1: Upload a PDF Document</label>
+        <input type="file" id="file-upload" accept=".pdf">
+        <div id="upload-status" class="status"></div>
+    </div>
+
+    <div class="section">
+        <label for="question-input">Step 2: Ask a Question</label>
+        <input type="text" id="question-input" placeholder="e.g., What were the key findings?" disabled>
+    </div>
+
+    <button id="ask-button" disabled>Generate Report</button>
+
+    <div id="dashboard">
+        <div class="spinner" id="loading-spinner"></div>
+        <div id="report">Your generated report will appear here...</div>
+    </div>
+</div>
+
+<script>
+    // --- Configuration ---
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+
+    // --- DOM Elements ---
+    const fileUpload = document.getElementById('file-upload');
+    const uploadStatus = document.getElementById('upload-status');
+    const questionInput = document.getElementById('question-input');
+    const askButton = document.getElementById('ask-button');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const reportContainer = document.getElementById('report');
+
+    // --- Event Listeners ---
+    fileUpload.addEventListener('change', handleFileUpload);
+    askButton.addEventListener('click', handleAskQuestion);
+
+    // --- Functions ---
+    async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        uploadStatus.textContent = `Uploading ${file.name}...`;
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/uploadfile/`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            uploadStatus.textContent = result.message;
+            questionInput.disabled = false;
+            askButton.disabled = false;
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            uploadStatus.textContent = 'File upload failed. Please try again.';
+        }
+    }
+
+    async function handleAskQuestion() {
+        const question = questionInput.value;
+        if (!question) {
+            alert('Please enter a question.');
+            return;
+        }
+
+        loadingSpinner.style.display = 'block';
+        reportContainer.innerHTML = '';
+        askButton.disabled = true;
+
+        const formData = new FormData();
+        formData.append('question', question);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/ask/`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            reportContainer.textContent = result.report;
+        } catch (error) {
+            console.error('Error asking question:', error);
+            reportContainer.textContent = 'Failed to generate report. Please check the console for errors.';
+        } finally {
+            loadingSpinner.style.display = 'none';
+            askButton.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
